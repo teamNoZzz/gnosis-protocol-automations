@@ -21,8 +21,8 @@ npx builder place-order-with-automated-withdraw  \
 --buytoken 0xc778417e063141139fce010982780140aa0cd5ab  \
 --sellamount 5000000000000000000 --buyamount 100000000000000 --seconds 600  \
 --gelatoprovider 0x518eAa8f962246bCe2FA49329Fe998B66d67cbf8  --log
-
 ```
+4. Check your account after 10 minutes and notice gelato automatically called the withdraw function on the gnosis protocol on your behalf
 
 ## Contributing
 
