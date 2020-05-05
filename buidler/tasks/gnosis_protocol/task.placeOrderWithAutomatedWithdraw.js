@@ -23,8 +23,8 @@ export default task(
   )
   .addOptionalParam(
     "buyamount",
-    "amount of buy token to purchase (default 1 - market order)",
-    "1"
+    "amount of buy token to purchase (default 0.0001 ETH - market order)",
+    "100000000000000"
   )
   .addOptionalParam(
     "seconds",
