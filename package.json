@@ -1,0 +1,21 @@
+{
+  "name": "gelato-gnosis-protocol",
+  "version": "1.0.0",
+  "description": "gnosis protocol automation features using gelato",
+  "main": "buidler.config.js",
+  "dependencies": {},
+  "devDependencies": {
+    "@babel/core": "7.7.4",
+    "@babel/preset-env": "7.7.4",
+    "@babel/register": "7.7.4",
+    "@nomiclabs/buidler": "1.2.0",
+    "@nomiclabs/buidler-ethers": "1.2.0",
+    "dotenv": "^8.2.0",
+    "ethers": "^4.0.47"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "author": "hilmarx",
+  "license": "ISC"
+}
