@@ -105,7 +105,7 @@ export default task(
         .sub(requiredFee);
 
       if (sellTokenBalance.lte(ethers.utils.bigNumberify(taskArgs.sellamount)))
-        throw new Error("Insufficient selltoken to conduct enter stableswap");
+        throw new Error("Insufficient selltoken to conduct order placement");
 
       if (taskArgs.log)
         console.log(`
