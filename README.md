@@ -16,7 +16,11 @@ npm install
 3. To deploy a gnosis safe, place an order on gnosis protocol (DAI for WETH) and schedule an automated withdraw via gelato, input the following command:
 
 ```bash
-npx builder place-order-with-automated-withdraw --selltoken 0x5592EC0cfb4dbc12D3aB100b257153436a1f0FEa --buytoken 0xc778417e063141139fce010982780140aa0cd5ab --sellamount 5000000000000000000 --buyamount 1 --seconds 600 --gelatoprovider 0x518eAa8f962246bCe2FA49329Fe998B66d67cbf8  --log
+npx builder place-order-with-automated-withdraw  \
+--selltoken 0x5592EC0cfb4dbc12D3aB100b257153436a1f0FEa  \
+--buytoken 0xc778417e063141139fce010982780140aa0cd5ab  \
+--sellamount 5000000000000000000 --buyamount 1 --seconds 600  \
+--gelatoprovider 0x518eAa8f962246bCe2FA49329Fe998B66d67cbf8  --log
 
 ```
 
