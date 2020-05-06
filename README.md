@@ -6,6 +6,7 @@ This repository contains scripts that showcase how to automate various use cases
 
 ```bash
 git clone https://github.com/gelatodigital/gnosis-protocol-automations.git
+cd gnosis-protocol-automations
 npm install
 ```
 
