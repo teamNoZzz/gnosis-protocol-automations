@@ -95,7 +95,6 @@ module.exports = {
 // ================================= PLUGINS =========================================
 usePlugin("@nomiclabs/buidler-ethers");
 
-require("./buidler/tasks/task.testy");
 require("./buidler/tasks/gnosis_protocol/helpers/task.determineCpkProxyAddress");
 
 // ================================= HELPERS =========================================
@@ -105,7 +104,11 @@ require("./buidler/tasks/helpers/task.abi-encode-withselector.js");
 // ================================= GELATO =========================================
 require("./buidler/tasks/gelato/providers/task.checkifProvided");
 
-// ================================= GNOSIS =========================================
-require("./buidler/tasks/gnosis_protocol/task.placeOrderWithAutomatedWithdraw");
+// ================================= GNOSIS PROTOCOL =========================================
+require("./buidler/tasks/gnosis_protocol/one_off/task.placeOrderWithAutomatedWithdraw");
+
+// ================================= GNOSIS SAFE =========================================
 require("./buidler/tasks/gnosis_safe/task.execTransaction");
 require("./buidler/tasks/gnosis_safe/task.deployGnosisSafeAndExecTx");
+require("./buidler/tasks/gnosis_safe/task.isGelatoWhitelisted");
+require("./buidler/tasks/gnosis_safe/task.isSafeDeployed");

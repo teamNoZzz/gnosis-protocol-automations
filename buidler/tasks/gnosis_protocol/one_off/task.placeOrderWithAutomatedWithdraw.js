@@ -3,7 +3,7 @@ import { constants, utils } from "ethers";
 
 export default task(
   "place-order-with-automated-withdraw",
-  `Deploys CPK proxy if not deployed yet, sells sellTokens on batch exchange and tasks gelato to withdraw the funds later and sends them back to the users EOA`
+  `1) Deploys CPK proxy (if not deployed yet), 2) transfer sell Tokens from users EOA to gnosis safe, 3) sells sellTokens on batch exchange, 4) requests future withdraw and 5) tasks gelato to withdraw the funds later (after the withdraw request is valid) and sends them back to the users EOA`
 )
   .addOptionalParam(
     "selltoken",
@@ -65,12 +65,6 @@ export default task(
         saltnonce: taskArgs.saltnonce,
       });
 
-      // // Deterimine provider
-      // if (!taskArgs.gelatoprovider)
-      //   taskArgs.gelatoprovider = await run("handleGelatoProvider", {
-      //     gelatoprovider: taskArgs.gelatoprovider,
-      //   });
-
       if (taskArgs.log) console.log(`Safe Address: ${safeAddress}`);
 
       // Approve proxy address to move X amount of DAI
@@ -116,53 +110,24 @@ export default task(
             Amount that will be sold:        = ${totalSellAmountMinusFee}
             `);
 
+      // #1st User tx
       await selltoken.approve(safeAddress, taskArgs.sellamount);
 
-      const gelatoCore = await run("instantiateContract", {
-        address: config.networks.rinkeby.addressBook.gelato.gelatoCore,
-        name: "GelatoCore",
-        write: true,
-        signer: user,
+      let safeDeployed = await run("is-safe-deployed", {
+        safeaddress: safeAddress,
+      });
+      let gelatoIsWhitelisted = await run("is-gelato-whitelisted-module", {
+        safeaddress: safeAddress,
       });
 
-      let safeDeployed = false;
-      let gelatoIsWhitelisted = false;
-      try {
-        // check if Proxy is already deployed
-        const gnosisSafe = await run("instantiateContract", {
-          name: "IGnosisSafe",
-          address: safeAddress,
-          write: true,
-          signer: user,
-        });
-        // Do a test call to see if contract exist
-        await gnosisSafe.getOwners();
-        // If instantiated, contract exist
-        safeDeployed = true;
-        if (taskArgs.log) console.log("User already has safe deployed");
-
-        // Check if gelato is whitelisted module
-        const whitelistedModules = await gnosisSafe.getModules();
-        for (const module of whitelistedModules) {
-          if (
-            ethers.utils.getAddress(module) ===
-            ethers.utils.getAddress(gelatoCore.address)
-          ) {
-            gelatoIsWhitelisted = true;
-            break;
-          }
-        }
-        if (taskArgs.log)
-          console.log(`Is gelato an enabled module? ${gelatoIsWhitelisted}`);
-      } catch (error) {
-        console.log("safe not deployed, deploy safe and execute tx");
-      }
+      const gelatoCoreAddress =
+        config.networks.rinkeby.addressBook.gelato.gelatoCore;
 
       // Get enable gelatoCore as module calldata
       const enableGelatoData = await run("abi-encode-withselector", {
         contractname: "IGnosisSafe",
         functionname: "enableModule",
-        inputs: [gelatoCore.address],
+        inputs: [gelatoCoreAddress],
       });
 
       // Encode enable gelatoCore for Multi send
@@ -242,16 +207,28 @@ export default task(
       });
 
       // ######### Check if Provider has whitelisted TaskSpec #########
-      const isProvided = await run("check-if-provided", {
+      await run("check-if-provided", {
         task: withdrawTask,
         provider: gelatoProvider.addr,
       });
 
-      if (!isProvided) {
-        throw Error(
-          `Task Spec is not provided by provider: ${taskArgs.gelatoprovider}. Please provide it by running the gc-providetaskspec script`
-        );
-      } else if (taskArgs.log) console.log("already provided");
+      const submitTaskPayload = await run("abi-encode-withselector", {
+        contractname: "GelatoCore",
+        functionname: "submitTask",
+        inputs: [withdrawTask],
+      });
+
+      // Encode for MULTI SEND
+      const submitTaskMultiSend = ethers.utils.solidityPack(
+        ["uint8", "address", "uint256", "uint256", "bytes"],
+        [
+          Operation.Call, //operation => .Call
+          gelatoCoreAddress, //to
+          0, // value
+          ethers.utils.hexDataLength(submitTaskPayload), // data length
+          submitTaskPayload, // data
+        ]
+      );
 
       // Get Sell on batch exchange calldata
       const placeOrderBatchExchangeData = await run("abi-encode-withselector", {
@@ -268,7 +245,7 @@ export default task(
       });
 
       // encode for Multi send
-      const actionPlaceOrderBatchExchange =
+      const actionPlaceOrderBatchExchangeAddress =
         config.networks.rinkeby.addressBook.gelatoActions
           .actionPlaceOrderBatchExchangePayFee;
 
@@ -276,28 +253,10 @@ export default task(
         ["uint8", "address", "uint256", "uint256", "bytes"],
         [
           1, //operation
-          actionPlaceOrderBatchExchange, //to
+          actionPlaceOrderBatchExchangeAddress, //to
           0, // value
           ethers.utils.hexDataLength(placeOrderBatchExchangeData), // data length
           placeOrderBatchExchangeData, // data
-        ]
-      );
-
-      const submitTaskPayload = await run("abi-encode-withselector", {
-        contractname: "GelatoCore",
-        functionname: "submitTask",
-        inputs: [withdrawTask],
-      });
-
-      // Encode for MULTI SEND
-      const submitTaskMultiSend = ethers.utils.solidityPack(
-        ["uint8", "address", "uint256", "uint256", "bytes"],
-        [
-          Operation.Call, //operation => .Call
-          gelatoCore.address, //to
-          0, // value
-          ethers.utils.hexDataLength(submitTaskPayload), // data length
-          submitTaskPayload, // data
         ]
       );
 
@@ -334,6 +293,7 @@ export default task(
         ]);
       }
 
+      // #2nd User tx
       let submitTaskTxHash;
       if (safeDeployed) {
         submitTaskTxHash = await run("exectransaction", {

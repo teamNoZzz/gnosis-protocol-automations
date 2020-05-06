@@ -63,7 +63,9 @@ export default task(
           console.log(
             `Task Spec is not provided by provider: ${taskArgs.provider}. Please provide it by running the gc-providetaskspec script`
           );
-        return false;
+        throw Error(
+          `Task Spec is not provided by provider: ${taskArgs.provider}. Please provide it by running the gc-providetaskspec script`
+        );
       } else {
         if (taskArgs.log) console.log("Task spec provided ✅");
         return true;
