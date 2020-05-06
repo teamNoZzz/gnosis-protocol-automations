@@ -5,7 +5,7 @@ This repository contains scripts that showcase how to automate various use cases
 ## Installation
 
 ```bash
-git clone https://github.com/gelatodigital/gelato-V1.git
+git clone https://github.com/gelatodigital/gnosis-protocol-automations
 npm install
 ```
 
