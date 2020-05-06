@@ -56,8 +56,14 @@ module.exports = {
         gelatoActions: {
           actionWithdrawBatchExchange:
             "0xE52D98E9ce5eaB002860D79cD837c5d7C1258fcC",
+          actionPlaceOrderBatchExchange:
+            "0x97C2068714F7B5359da8cC3D05b6E6D8019b582c",
           actionPlaceOrderBatchExchangePayFee:
             "0xA66Dc4AacF4D23118ce148474d349b75a6A4E3C8",
+        },
+        gelatoConditions: {
+          conditionBatchExchangeFundsWithdrawable:
+            "0x66A11882E861B85685668fB3e72a7c6b74753352",
         },
         gnosisSafe: {
           mastercopy: "0x34CfAC646f301356fAa8B21e94227e3583Fe3F5F",
@@ -106,6 +112,7 @@ require("./buidler/tasks/gelato/providers/task.checkifProvided");
 
 // ================================= GNOSIS PROTOCOL =========================================
 require("./buidler/tasks/gnosis_protocol/one_off/task.placeOrderWithAutomatedWithdraw");
+require("./buidler/tasks/gnosis_protocol/repeated/task.conditionTimeActionTrade");
 
 // ================================= GNOSIS SAFE =========================================
 require("./buidler/tasks/gnosis_safe/task.execTransaction");

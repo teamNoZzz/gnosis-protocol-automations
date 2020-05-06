@@ -58,11 +58,6 @@ export default task(
 
       // Revert if task spec is not provided
       if (isProvided == 0) {
-        // await gelatoCore.provideTaskSpecs([taskSpec]);
-        if (taskArgs.log)
-          console.log(
-            `Task Spec is not provided by provider: ${taskArgs.provider}. Please provide it by running the gc-providetaskspec script`
-          );
         throw Error(
           `Task Spec is not provided by provider: ${taskArgs.provider}. Please provide it by running the gc-providetaskspec script`
         );
