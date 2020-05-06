@@ -1,4 +1,4 @@
-# Gnosis Protocol | Gelato Automation feautures
+# Gnosis Protocol | Gelato Automation features
 
 This repository contains scripts that showcases how to automate various use cases such as placing orders on the gnosis protocol and scheduling an automated withdraw on behalf of users using gelato.
 
