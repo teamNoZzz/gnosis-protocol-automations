@@ -6,12 +6,6 @@ export default task(
   `Creates a gelato task that sells selltoken on Batch Exchange every time users selltoken Balance reaches a certain threshold on Rinkeby`
 )
   .addOptionalParam(
-    "mnemonicIndex",
-    "index of mnemonic in .env that will be used for the user address",
-    "0",
-    types.string
-  )
-  .addOptionalParam(
     "selltoken",
     "address of token to sell (default DAI)",
     "0x5592EC0cfb4dbc12D3aB100b257153436a1f0FEa",

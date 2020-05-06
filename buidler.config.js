@@ -66,6 +66,7 @@ module.exports = {
             "0x66A11882E861B85685668fB3e72a7c6b74753352",
           conditionBalanceStateful:
             "0x0A5Cb504e4684E8F730F582AB9b9AA671115e60C",
+          conditionKyberRate: "0x4F2935cd565E88832721ea5465D21593894274Cd",
         },
         gnosisSafe: {
           mastercopy: "0x34CfAC646f301356fAa8B21e94227e3583Fe3F5F",
@@ -113,6 +114,7 @@ require("./buidler/tasks/helpers/task.abi-encode-withselector.js");
 require("./buidler/tasks/gelato/providers/task.checkifProvided");
 
 // ================================= GNOSIS PROTOCOL =========================================
+require("./buidler/tasks/gnosis_protocol/one_off/task.conditionKyberPriceActionTradeAndSubmitWithdraw");
 require("./buidler/tasks/gnosis_protocol/one_off/task.placeOrderWithAutomatedWithdraw");
 require("./buidler/tasks/gnosis_protocol/repeated/task.conditionTimeActionTrade");
 require("./buidler/tasks/gnosis_protocol/repeated/task.conditionBalanceActionTrade");

@@ -2,8 +2,8 @@ import { task, types } from "@nomiclabs/buidler/config";
 import { constants, utils } from "ethers";
 
 export default task(
-  "gnosis-protocol-time-trade-repeated",
-  `Creates a gelato task that sells selltoken on Batch Exchange every X seconds on Rinkeby`
+  "gnosis-protocol-kyberprice-trade-and-submit-withdraw",
+  `Creates a gelato task that market sells selltoken on Batch Exchange if a certain price is reached on kyber, while scheduling a withdraw task that withdraws the tokens and sends them back to the users EOA after x seconds have passed`
 )
   .addOptionalParam(
     "selltoken",
@@ -24,20 +24,14 @@ export default task(
     types.string
   )
   .addOptionalParam(
-    "buyamount",
-    "amount of buy token to purchase (default 0.0001 ETH - market order)",
-    "100000000000000",
-    types.string
-  )
-  .addOptionalParam(
-    "frequency",
-    "how often it should be done, important for accurate approvals and expiry date",
-    "5",
+    "pricedifference",
+    "amount that the current price should be lower to activate action (default 0.00005*10**18)",
+    "50000000000000",
     types.string
   )
   .addOptionalParam(
     "seconds",
-    "how many seconds between each trade - default & min is 300 (1 batch) - must be divisible by 300",
+    "how many seconds between each order placement & withdrawRequest - default & min is 300 (1 batch) - must be divisible by 300",
     "300",
     types.string
   )
@@ -65,7 +59,7 @@ export default task(
       .bigNumberify(taskArgs.seconds)
       .div(ethers.utils.bigNumberify("300"));
 
-    // 1. Determine CPK proxy address of user
+    // 1. Determine CPK proxy address of user (mnemoric index 0 by default)
     const user = config.networks.rinkeby.user();
 
     const userAddress = await user.getAddress();
@@ -79,28 +73,51 @@ export default task(
 
     // 2. Approve proxy address to move X amount of DAI
 
-    const selltoken = await run("instantiateContract", {
+    const sellToken = await run("instantiateContract", {
       address: taskArgs.selltoken,
       name: "ERC20",
       write: true,
       signer: user,
     });
 
+    // Get the required fee from the providers Fee Contract
+    const feeExtractorAddress =
+      config.networks.rinkeby.addressBook.gelato.feeExtractor;
+
+    const feeExtractor = await run("instantiateContract", {
+      name: "FeeExtractor",
+      address: feeExtractorAddress,
+      read: true,
+      signer: user,
+    });
+
+    const requiredFee = await feeExtractor.getFeeAmount(taskArgs.selltoken);
+    if (requiredFee.eq(constants.Zero))
+      throw Error(
+        "Sell Token not accepted by provider, choose a different token"
+      );
+
     // Check if user has sufficient balance (sell Amount plus required Fee)
-    const sellTokenBalance = await selltoken.balanceOf(userAddress);
-
-    if (sellTokenBalance.lte(ethers.utils.bigNumberify(taskArgs.sellamount)))
-      throw new Error("Insufficient selltoken to conduct enter stableswap");
-
-    const totalSellAmount = ethers.utils
+    const sellTokenBalance = await sellToken.balanceOf(userAddress);
+    const totalSellAmountMinusFee = ethers.utils
       .bigNumberify(taskArgs.sellamount)
-      .mul(ethers.utils.bigNumberify(taskArgs.frequency));
+      .sub(requiredFee);
+    if (sellTokenBalance.lte(ethers.utils.bigNumberify(taskArgs.sellamount)))
+      throw new Error("Insufficient sellToken to conduct enter stableswap");
+
+    if (ethers.utils.bigNumberify(taskArgs.sellamount).lte(requiredFee))
+      throw new Error("Sell Amount must be greater than fees");
 
     if (taskArgs.log)
       console.log(`
-          Approve gnosis safe to move ${totalSellAmount} of token: ${taskArgs.selltoken}\n`);
+          Approve gnosis safe to move ${taskArgs.sellamount} of token: ${taskArgs.selltoken}\n
+          Inputted Sell Volume:              ${taskArgs.sellamount}\n
+          Fee for automated withdrawal:    - ${requiredFee}\n
+          ------------------------------------------------------------\n
+          Amount that will be sold:        = ${totalSellAmountMinusFee}
+          `);
 
-    await selltoken.approve(safeAddress, totalSellAmount);
+    await sellToken.approve(safeAddress, taskArgs.sellamount);
 
     let safeDeployed = await run("is-safe-deployed", {
       safeaddress: safeAddress,
@@ -111,9 +128,6 @@ export default task(
 
     const gelatoCoreAddress =
       config.networks.rinkeby.addressBook.gelato.gelatoCore;
-
-    if (taskArgs.log)
-      console.log(`Is gelato an enabled module? ${gelatoIsWhitelisted}`);
 
     // Get enable gelatoCore as module calldata
     const enableGelatoData = await run("abi-encode-withselector", {
@@ -144,7 +158,6 @@ export default task(
       read: true,
       signer: user,
     });
-
     const currentBatchId = await batchExchange.getCurrentBatchId();
     const currentBatchIdBN = ethers.utils.bigNumberify(currentBatchId);
 
@@ -167,16 +180,46 @@ export default task(
       module: gnosisSafeProviderModuleAddress,
     });
 
-    // ############## Condition #####################
-
     const conditionAddress =
-      config.networks.rinkeby.addressBook.gelatoConditions
-        .conditionBatchExchangeFundsWithdrawable;
+      config.networks.rinkeby.addressBook.gelatoConditions.conditionKyberRate;
+
+    const kyberAddress = config.networks.rinkeby.addressBook.kyber.proxy;
+
+    const kyberNetwork = await run("instantiateContract", {
+      name: "IKyber",
+      address: kyberAddress,
+      read: true,
+      signer: user,
+    });
+
+    let currentRate = await kyberNetwork.getExpectedRate(
+      taskArgs.selltoken,
+      taskArgs.buytoken,
+      taskArgs.sellamount
+    );
+
+    currentRate = currentRate[0];
+
+    // address _account, address _token, uint256 _refBalance, bool _greaterElseSmaller
+    const referenceRate = ethers.utils
+      .bigNumberify(currentRate)
+      .sub(ethers.utils.bigNumberify(taskArgs.pricedifference));
+
+    if (taskArgs.log)
+      console.log(
+        `Batch Exchange Order will be placed when price reaches: ${referenceRate}`
+      );
 
     const conditionData = await run("abi-encode-withselector", {
-      contractname: "ConditionBatchExchangeFundsWithdrawable",
+      contractname: "ConditionKyberRate",
       functionname: "ok",
-      inputs: [safeAddress, taskArgs.selltoken, taskArgs.buytoken],
+      inputs: [
+        taskArgs.selltoken,
+        taskArgs.sellamount,
+        taskArgs.buytoken,
+        referenceRate,
+        false,
+      ],
     });
 
     const condition = new Condition({
@@ -184,62 +227,102 @@ export default task(
       data: conditionData,
     });
 
-    // ############## Condition END #####################
+    // ############################################### Withdraw Action
 
-    const placeOrderBatchExchangeAddress =
+    const withdrawActionAddress =
       config.networks.rinkeby.addressBook.gelatoActions
-        .actionPlaceOrderBatchExchange;
+        .actionWithdrawBatchExchange;
+
+    const actionWithdrawFromBatchExchangePayload = await run(
+      "abi-encode-withselector",
+      {
+        contractname: "ActionWithdrawBatchExchange",
+        functionname: "action",
+        inputs: [userAddress, taskArgs.selltoken, taskArgs.buytoken],
+      }
+    );
+
+    const actionWithdrawBatchExchange = new Action({
+      addr: withdrawActionAddress,
+      data: actionWithdrawFromBatchExchangePayload,
+      operation: 1,
+      value: 0,
+      termsOkCheck: true,
+    });
+
+    const taskWithdrawBatchExchange = new Task({
+      provider: gelatoProvider,
+      actions: [actionWithdrawBatchExchange],
+      expiryDate: constants.HashZero,
+    });
+
+    // ######### Check if Provider has whitelisted TaskSpec #########
+    await run("check-if-provided", {
+      task: taskWithdrawBatchExchange,
+      provider: gelatoProvider.addr,
+    });
+
+    // ############################################### Place Order
+
+    // Get Sell on batch exchange calldata
+    const actionPlaceOrderBatchExchangePayFeeAddress =
+      config.networks.rinkeby.addressBook.gelatoActions
+        .actionPlaceOrderBatchExchangePayFee;
 
     const placeOrderBatchExchangeData = await run("abi-encode-withselector", {
-      contractname: "ActionPlaceOrderBatchExchange",
+      contractname: "ActionPlaceOrderBatchExchangePayFee",
       functionname: "action",
       inputs: [
         userAddress,
         taskArgs.selltoken,
         taskArgs.buytoken,
         taskArgs.sellamount,
-        taskArgs.buyamount,
+        1, //buyAmount => market order
         batchDuration,
       ],
     });
 
-    const placeOrderAction = new Action({
-      addr: placeOrderBatchExchangeAddress,
+    const realPlaceOrderAction = new Action({
+      addr: actionPlaceOrderBatchExchangePayFeeAddress,
       data: placeOrderBatchExchangeData,
-      operation: Operation.Delegatecall,
+      operation: 1,
+      value: 0,
       termsOkCheck: true,
     });
 
-    const placeOrderTask = new Task({
+    const submitWithTaskData = await run("abi-encode-withselector", {
+      contractname: "GelatoCore",
+      functionname: "submitTask",
+      inputs: [taskWithdrawBatchExchange],
+    });
+
+    const submitTaskAction = new Action({
+      addr: gelatoCoreAddress,
+      data: submitWithTaskData,
+      operation: Operation.Call,
+      value: 0,
+      termsOkCheck: false,
+    });
+
+    const placeOrderAndSubmitWithdrawTask = new Task({
       provider: gelatoProvider,
       conditions: [condition],
-      actions: [placeOrderAction],
+      actions: [realPlaceOrderAction, submitTaskAction],
       expiryDate: constants.HashZero,
-      autoSubmitNextTask: true,
     });
 
     // ######### Check if Provider has whitelisted TaskSpec #########
     await run("check-if-provided", {
-      task: placeOrderTask,
+      task: placeOrderAndSubmitWithdrawTask,
       provider: gelatoProvider.addr,
     });
 
-    // encode for Multi send
-    const placeOrderBatchExchangeDataMultiSend = ethers.utils.solidityPack(
-      ["uint8", "address", "uint256", "uint256", "bytes"],
-      [
-        1, //operation
-        placeOrderBatchExchangeAddress, //to
-        0, // value
-        ethers.utils.hexDataLength(placeOrderBatchExchangeData), // data length
-        placeOrderBatchExchangeData, // data
-      ]
-    );
+    // ############################################### Encode Submit Task on Gelato Core
 
     const submitTaskPayload = await run("abi-encode-withselector", {
       contractname: "GelatoCore",
       functionname: "submitTask",
-      inputs: [placeOrderTask],
+      inputs: [placeOrderAndSubmitWithdrawTask],
     });
 
     const submitTaskMultiSend = ethers.utils.solidityPack(
@@ -269,21 +352,12 @@ export default task(
     if (!gelatoIsWhitelisted) {
       encodedMultisendData = multiSend.interface.functions.multiSend.encode([
         ethers.utils.hexlify(
-          ethers.utils.concat([
-            enableGelatoDataMultiSend,
-            placeOrderBatchExchangeDataMultiSend,
-            submitTaskMultiSend,
-          ])
+          ethers.utils.concat([enableGelatoDataMultiSend, submitTaskMultiSend])
         ),
       ]);
     } else {
       encodedMultisendData = multiSend.interface.functions.multiSend.encode([
-        ethers.utils.hexlify(
-          ethers.utils.concat([
-            placeOrderBatchExchangeDataMultiSend,
-            submitTaskMultiSend,
-          ])
-        ),
+        ethers.utils.hexlify(ethers.utils.concat([submitTaskMultiSend])),
       ]);
     }
 
@@ -312,28 +386,5 @@ export default task(
 
     if (taskArgs.log) console.log(submitTaskTxHash);
 
-    // if (taskArgs.log)
-    //   console.log(`\n submitTaskTx Hash: ${submitTaskTxHash}\n`);
-
-    // // // Wait for tx to get mined
-    // // const { blockHash: blockhash } = await submitTaskTx.wait();
-
-    // // Event Emission verification
-    // if (taskArgs.events) {
-    //   const parsedSubmissionLog = await run("event-getparsedlog", {
-    //     contractname: "GelatoCore",
-    //     contractaddress: taskArgs.gelatocoreaddress,
-    //     eventname: "LogTaskSubmitted",
-    //     txhash: submitTaskTxHash,
-    //     values: true,
-    //     stringify: true,
-    //   });
-    //   if (parsedSubmissionLog)
-    //     console.log("\n✅ LogTaskSubmitted\n", parsedSubmissionLog);
-    //   else console.log("\n❌ LogTaskSubmitted not found");
-    // }
-
-    // return submitTaskTxHash;
-
-    // 4. If proxy was deployed, only execTx, if not, createProxyAndExecTx
+    return submitTaskTxHash;
   });
