@@ -11,7 +11,7 @@ npm install
 
 ## Usage
 
-1. Create an .env file, store a private key in USER_PK and your infura id in INFURA_ID
+1. Create an .env file, store a private key in USER_PK and your infura id in INFURA_ID (make sure to put .env in .gitignore)
 2. Make sure to have sufficient ETH in your user account and get some Rinkeby DAI from [Compund's Rinkeby UI](https://app.compound.finance/) (Supply DAI => Withdraw => Faucet)
 3. To deploy a gnosis safe, place an order on gnosis protocol (DAI for WETH) and schedule an automated withdraw via gelato in one transaction, input the following command:
 
