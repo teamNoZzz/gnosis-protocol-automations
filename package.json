@@ -11,7 +11,9 @@
     "@nomiclabs/buidler": "1.2.0",
     "@nomiclabs/buidler-ethers": "1.2.0",
     "dotenv": "^8.2.0",
-    "ethers": "^4.0.47"
+    "ethers": "^4.0.47",
+    "solc": "^0.6.6",
+    "prettier": "^2.0.3"
   },
   "scripts": {
     "test": "mocha"

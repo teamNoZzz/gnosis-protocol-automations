@@ -1,0 +1,1107 @@
+{
+  "contractName": "IGelatoCore",
+  "abi": [
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "executor",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "taskReceiptId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "reason",
+          "type": "string"
+        }
+      ],
+      "name": "LogCanExecFailed",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "executor",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "taskReceiptId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "executorRefund",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "reason",
+          "type": "string"
+        }
+      ],
+      "name": "LogExecReverted",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "executor",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "taskReceiptId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "executorSuccessFee",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "sysAdminSuccessFee",
+          "type": "uint256"
+        }
+      ],
+      "name": "LogExecSuccess",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "taskReceiptId",
+          "type": "uint256"
+        }
+      ],
+      "name": "LogTaskCancelled",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "taskReceiptId",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "taskReceiptHash",
+          "type": "bytes32"
+        },
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "id",
+              "type": "uint256"
+            },
+            {
+              "internalType": "address",
+              "name": "userProxy",
+              "type": "address"
+            },
+            {
+              "components": [
+                {
+                  "components": [
+                    {
+                      "internalType": "address",
+                      "name": "addr",
+                      "type": "address"
+                    },
+                    {
+                      "internalType": "contract IGelatoProviderModule",
+                      "name": "module",
+                      "type": "address"
+                    }
+                  ],
+                  "internalType": "struct Provider",
+                  "name": "provider",
+                  "type": "tuple"
+                },
+                {
+                  "components": [
+                    {
+                      "internalType": "contract IGelatoCondition",
+                      "name": "inst",
+                      "type": "address"
+                    },
+                    {
+                      "internalType": "bytes",
+                      "name": "data",
+                      "type": "bytes"
+                    }
+                  ],
+                  "internalType": "struct Condition[]",
+                  "name": "conditions",
+                  "type": "tuple[]"
+                },
+                {
+                  "components": [
+                    {
+                      "internalType": "address",
+                      "name": "addr",
+                      "type": "address"
+                    },
+                    {
+                      "internalType": "bytes",
+                      "name": "data",
+                      "type": "bytes"
+                    },
+                    {
+                      "internalType": "enum Operation",
+                      "name": "operation",
+                      "type": "uint8"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "value",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "bool",
+                      "name": "termsOkCheck",
+                      "type": "bool"
+                    }
+                  ],
+                  "internalType": "struct Action[]",
+                  "name": "actions",
+                  "type": "tuple[]"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "expiryDate",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "bool",
+                  "name": "autoSubmitNextTask",
+                  "type": "bool"
+                }
+              ],
+              "internalType": "struct Task",
+              "name": "task",
+              "type": "tuple"
+            }
+          ],
+          "indexed": false,
+          "internalType": "struct TaskReceipt",
+          "name": "taskReceipt",
+          "type": "tuple"
+        }
+      ],
+      "name": "LogTaskSubmitted",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "id",
+              "type": "uint256"
+            },
+            {
+              "internalType": "address",
+              "name": "userProxy",
+              "type": "address"
+            },
+            {
+              "components": [
+                {
+                  "components": [
+                    {
+                      "internalType": "address",
+                      "name": "addr",
+                      "type": "address"
+                    },
+                    {
+                      "internalType": "contract IGelatoProviderModule",
+                      "name": "module",
+                      "type": "address"
+                    }
+                  ],
+                  "internalType": "struct Provider",
+                  "name": "provider",
+                  "type": "tuple"
+                },
+                {
+                  "components": [
+                    {
+                      "internalType": "contract IGelatoCondition",
+                      "name": "inst",
+                      "type": "address"
+                    },
+                    {
+                      "internalType": "bytes",
+                      "name": "data",
+                      "type": "bytes"
+                    }
+                  ],
+                  "internalType": "struct Condition[]",
+                  "name": "conditions",
+                  "type": "tuple[]"
+                },
+                {
+                  "components": [
+                    {
+                      "internalType": "address",
+                      "name": "addr",
+                      "type": "address"
+                    },
+                    {
+                      "internalType": "bytes",
+                      "name": "data",
+                      "type": "bytes"
+                    },
+                    {
+                      "internalType": "enum Operation",
+                      "name": "operation",
+                      "type": "uint8"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "value",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "bool",
+                      "name": "termsOkCheck",
+                      "type": "bool"
+                    }
+                  ],
+                  "internalType": "struct Action[]",
+                  "name": "actions",
+                  "type": "tuple[]"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "expiryDate",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "bool",
+                  "name": "autoSubmitNextTask",
+                  "type": "bool"
+                }
+              ],
+              "internalType": "struct Task",
+              "name": "task",
+              "type": "tuple"
+            }
+          ],
+          "internalType": "struct TaskReceipt",
+          "name": "_TR",
+          "type": "tuple"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_gelatoMaxGas",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_execTxGasPrice",
+          "type": "uint256"
+        }
+      ],
+      "name": "canExec",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_userProxy",
+          "type": "address"
+        },
+        {
+          "components": [
+            {
+              "components": [
+                {
+                  "internalType": "address",
+                  "name": "addr",
+                  "type": "address"
+                },
+                {
+                  "internalType": "contract IGelatoProviderModule",
+                  "name": "module",
+                  "type": "address"
+                }
+              ],
+              "internalType": "struct Provider",
+              "name": "provider",
+              "type": "tuple"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "contract IGelatoCondition",
+                  "name": "inst",
+                  "type": "address"
+                },
+                {
+                  "internalType": "bytes",
+                  "name": "data",
+                  "type": "bytes"
+                }
+              ],
+              "internalType": "struct Condition[]",
+              "name": "conditions",
+              "type": "tuple[]"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "address",
+                  "name": "addr",
+                  "type": "address"
+                },
+                {
+                  "internalType": "bytes",
+                  "name": "data",
+                  "type": "bytes"
+                },
+                {
+                  "internalType": "enum Operation",
+                  "name": "operation",
+                  "type": "uint8"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "value",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "bool",
+                  "name": "termsOkCheck",
+                  "type": "bool"
+                }
+              ],
+              "internalType": "struct Action[]",
+              "name": "actions",
+              "type": "tuple[]"
+            },
+            {
+              "internalType": "uint256",
+              "name": "expiryDate",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bool",
+              "name": "autoSubmitNextTask",
+              "type": "bool"
+            }
+          ],
+          "internalType": "struct Task",
+          "name": "_task",
+          "type": "tuple"
+        }
+      ],
+      "name": "canSubmitTask",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "id",
+              "type": "uint256"
+            },
+            {
+              "internalType": "address",
+              "name": "userProxy",
+              "type": "address"
+            },
+            {
+              "components": [
+                {
+                  "components": [
+                    {
+                      "internalType": "address",
+                      "name": "addr",
+                      "type": "address"
+                    },
+                    {
+                      "internalType": "contract IGelatoProviderModule",
+                      "name": "module",
+                      "type": "address"
+                    }
+                  ],
+                  "internalType": "struct Provider",
+                  "name": "provider",
+                  "type": "tuple"
+                },
+                {
+                  "components": [
+                    {
+                      "internalType": "contract IGelatoCondition",
+                      "name": "inst",
+                      "type": "address"
+                    },
+                    {
+                      "internalType": "bytes",
+                      "name": "data",
+                      "type": "bytes"
+                    }
+                  ],
+                  "internalType": "struct Condition[]",
+                  "name": "conditions",
+                  "type": "tuple[]"
+                },
+                {
+                  "components": [
+                    {
+                      "internalType": "address",
+                      "name": "addr",
+                      "type": "address"
+                    },
+                    {
+                      "internalType": "bytes",
+                      "name": "data",
+                      "type": "bytes"
+                    },
+                    {
+                      "internalType": "enum Operation",
+                      "name": "operation",
+                      "type": "uint8"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "value",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "bool",
+                      "name": "termsOkCheck",
+                      "type": "bool"
+                    }
+                  ],
+                  "internalType": "struct Action[]",
+                  "name": "actions",
+                  "type": "tuple[]"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "expiryDate",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "bool",
+                  "name": "autoSubmitNextTask",
+                  "type": "bool"
+                }
+              ],
+              "internalType": "struct Task",
+              "name": "task",
+              "type": "tuple"
+            }
+          ],
+          "internalType": "struct TaskReceipt",
+          "name": "_TR",
+          "type": "tuple"
+        }
+      ],
+      "name": "cancelTask",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "currentTaskReceiptId",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "currentId",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "id",
+              "type": "uint256"
+            },
+            {
+              "internalType": "address",
+              "name": "userProxy",
+              "type": "address"
+            },
+            {
+              "components": [
+                {
+                  "components": [
+                    {
+                      "internalType": "address",
+                      "name": "addr",
+                      "type": "address"
+                    },
+                    {
+                      "internalType": "contract IGelatoProviderModule",
+                      "name": "module",
+                      "type": "address"
+                    }
+                  ],
+                  "internalType": "struct Provider",
+                  "name": "provider",
+                  "type": "tuple"
+                },
+                {
+                  "components": [
+                    {
+                      "internalType": "contract IGelatoCondition",
+                      "name": "inst",
+                      "type": "address"
+                    },
+                    {
+                      "internalType": "bytes",
+                      "name": "data",
+                      "type": "bytes"
+                    }
+                  ],
+                  "internalType": "struct Condition[]",
+                  "name": "conditions",
+                  "type": "tuple[]"
+                },
+                {
+                  "components": [
+                    {
+                      "internalType": "address",
+                      "name": "addr",
+                      "type": "address"
+                    },
+                    {
+                      "internalType": "bytes",
+                      "name": "data",
+                      "type": "bytes"
+                    },
+                    {
+                      "internalType": "enum Operation",
+                      "name": "operation",
+                      "type": "uint8"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "value",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "bool",
+                      "name": "termsOkCheck",
+                      "type": "bool"
+                    }
+                  ],
+                  "internalType": "struct Action[]",
+                  "name": "actions",
+                  "type": "tuple[]"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "expiryDate",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "bool",
+                  "name": "autoSubmitNextTask",
+                  "type": "bool"
+                }
+              ],
+              "internalType": "struct Task",
+              "name": "task",
+              "type": "tuple"
+            }
+          ],
+          "internalType": "struct TaskReceipt",
+          "name": "_TR",
+          "type": "tuple"
+        }
+      ],
+      "name": "exec",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "id",
+              "type": "uint256"
+            },
+            {
+              "internalType": "address",
+              "name": "userProxy",
+              "type": "address"
+            },
+            {
+              "components": [
+                {
+                  "components": [
+                    {
+                      "internalType": "address",
+                      "name": "addr",
+                      "type": "address"
+                    },
+                    {
+                      "internalType": "contract IGelatoProviderModule",
+                      "name": "module",
+                      "type": "address"
+                    }
+                  ],
+                  "internalType": "struct Provider",
+                  "name": "provider",
+                  "type": "tuple"
+                },
+                {
+                  "components": [
+                    {
+                      "internalType": "contract IGelatoCondition",
+                      "name": "inst",
+                      "type": "address"
+                    },
+                    {
+                      "internalType": "bytes",
+                      "name": "data",
+                      "type": "bytes"
+                    }
+                  ],
+                  "internalType": "struct Condition[]",
+                  "name": "conditions",
+                  "type": "tuple[]"
+                },
+                {
+                  "components": [
+                    {
+                      "internalType": "address",
+                      "name": "addr",
+                      "type": "address"
+                    },
+                    {
+                      "internalType": "bytes",
+                      "name": "data",
+                      "type": "bytes"
+                    },
+                    {
+                      "internalType": "enum Operation",
+                      "name": "operation",
+                      "type": "uint8"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "value",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "bool",
+                      "name": "termsOkCheck",
+                      "type": "bool"
+                    }
+                  ],
+                  "internalType": "struct Action[]",
+                  "name": "actions",
+                  "type": "tuple[]"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "expiryDate",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "bool",
+                  "name": "autoSubmitNextTask",
+                  "type": "bool"
+                }
+              ],
+              "internalType": "struct Task",
+              "name": "task",
+              "type": "tuple"
+            }
+          ],
+          "internalType": "struct TaskReceipt",
+          "name": "_TR",
+          "type": "tuple"
+        }
+      ],
+      "name": "hashTaskReceipt",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "id",
+              "type": "uint256"
+            },
+            {
+              "internalType": "address",
+              "name": "userProxy",
+              "type": "address"
+            },
+            {
+              "components": [
+                {
+                  "components": [
+                    {
+                      "internalType": "address",
+                      "name": "addr",
+                      "type": "address"
+                    },
+                    {
+                      "internalType": "contract IGelatoProviderModule",
+                      "name": "module",
+                      "type": "address"
+                    }
+                  ],
+                  "internalType": "struct Provider",
+                  "name": "provider",
+                  "type": "tuple"
+                },
+                {
+                  "components": [
+                    {
+                      "internalType": "contract IGelatoCondition",
+                      "name": "inst",
+                      "type": "address"
+                    },
+                    {
+                      "internalType": "bytes",
+                      "name": "data",
+                      "type": "bytes"
+                    }
+                  ],
+                  "internalType": "struct Condition[]",
+                  "name": "conditions",
+                  "type": "tuple[]"
+                },
+                {
+                  "components": [
+                    {
+                      "internalType": "address",
+                      "name": "addr",
+                      "type": "address"
+                    },
+                    {
+                      "internalType": "bytes",
+                      "name": "data",
+                      "type": "bytes"
+                    },
+                    {
+                      "internalType": "enum Operation",
+                      "name": "operation",
+                      "type": "uint8"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "value",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "bool",
+                      "name": "termsOkCheck",
+                      "type": "bool"
+                    }
+                  ],
+                  "internalType": "struct Action[]",
+                  "name": "actions",
+                  "type": "tuple[]"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "expiryDate",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "bool",
+                  "name": "autoSubmitNextTask",
+                  "type": "bool"
+                }
+              ],
+              "internalType": "struct Task",
+              "name": "task",
+              "type": "tuple"
+            }
+          ],
+          "internalType": "struct TaskReceipt[]",
+          "name": "_taskReceipts",
+          "type": "tuple[]"
+        }
+      ],
+      "name": "multiCancelTasks",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "components": [
+                {
+                  "internalType": "address",
+                  "name": "addr",
+                  "type": "address"
+                },
+                {
+                  "internalType": "contract IGelatoProviderModule",
+                  "name": "module",
+                  "type": "address"
+                }
+              ],
+              "internalType": "struct Provider",
+              "name": "provider",
+              "type": "tuple"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "contract IGelatoCondition",
+                  "name": "inst",
+                  "type": "address"
+                },
+                {
+                  "internalType": "bytes",
+                  "name": "data",
+                  "type": "bytes"
+                }
+              ],
+              "internalType": "struct Condition[]",
+              "name": "conditions",
+              "type": "tuple[]"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "address",
+                  "name": "addr",
+                  "type": "address"
+                },
+                {
+                  "internalType": "bytes",
+                  "name": "data",
+                  "type": "bytes"
+                },
+                {
+                  "internalType": "enum Operation",
+                  "name": "operation",
+                  "type": "uint8"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "value",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "bool",
+                  "name": "termsOkCheck",
+                  "type": "bool"
+                }
+              ],
+              "internalType": "struct Action[]",
+              "name": "actions",
+              "type": "tuple[]"
+            },
+            {
+              "internalType": "uint256",
+              "name": "expiryDate",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bool",
+              "name": "autoSubmitNextTask",
+              "type": "bool"
+            }
+          ],
+          "internalType": "struct Task[]",
+          "name": "_tasks",
+          "type": "tuple[]"
+        }
+      ],
+      "name": "multiSubmitTasks",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "components": [
+                {
+                  "internalType": "address",
+                  "name": "addr",
+                  "type": "address"
+                },
+                {
+                  "internalType": "contract IGelatoProviderModule",
+                  "name": "module",
+                  "type": "address"
+                }
+              ],
+              "internalType": "struct Provider",
+              "name": "provider",
+              "type": "tuple"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "contract IGelatoCondition",
+                  "name": "inst",
+                  "type": "address"
+                },
+                {
+                  "internalType": "bytes",
+                  "name": "data",
+                  "type": "bytes"
+                }
+              ],
+              "internalType": "struct Condition[]",
+              "name": "conditions",
+              "type": "tuple[]"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "address",
+                  "name": "addr",
+                  "type": "address"
+                },
+                {
+                  "internalType": "bytes",
+                  "name": "data",
+                  "type": "bytes"
+                },
+                {
+                  "internalType": "enum Operation",
+                  "name": "operation",
+                  "type": "uint8"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "value",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "bool",
+                  "name": "termsOkCheck",
+                  "type": "bool"
+                }
+              ],
+              "internalType": "struct Action[]",
+              "name": "actions",
+              "type": "tuple[]"
+            },
+            {
+              "internalType": "uint256",
+              "name": "expiryDate",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bool",
+              "name": "autoSubmitNextTask",
+              "type": "bool"
+            }
+          ],
+          "internalType": "struct Task",
+          "name": "_task",
+          "type": "tuple"
+        }
+      ],
+      "name": "submitTask",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_taskReceiptId",
+          "type": "uint256"
+        }
+      ],
+      "name": "taskReceiptHash",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

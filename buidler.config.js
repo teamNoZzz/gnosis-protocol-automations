@@ -99,6 +99,10 @@ module.exports = {
       //   filters: rinkebyConfig.filters,
     },
   },
+  solc: {
+    version: "0.6.6",
+    optimizer: { enabled: true },
+  },
 };
 
 // ================================= PLUGINS =========================================
