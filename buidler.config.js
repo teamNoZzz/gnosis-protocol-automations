@@ -48,9 +48,9 @@ module.exports = {
         gelato: {
           executor: "0x99E69499973484a96639f4Fb17893BC96000b3b8",
           defaultProvider: "0x518eAa8f962246bCe2FA49329Fe998B66d67cbf8",
-          gelatoCore: "0xe2F32A922dCd4A960BE4F7F7624d42cA583F8ECc",
+          gelatoCore: "0x6B7720fFa476e1a85f7301F54Bb2009a3CEE6B1c",
           providerModuleGnosisSafeProxy:
-            "0x49f7f32f3f82A3b2f923FFFd547075c00002Fe4b",
+            "0x42b6303BAdEB2d5038FcEd9c1C2F2f5CD8eA9568",
           feeExtractor: "0x9b625d0aC057450E67B7e3B6e17633AcF01Fe2a9",
         },
         gelatoActions: {
@@ -88,9 +88,6 @@ module.exports = {
         uniswap: {
           uniswapFactoy: "0xf5D915570BC477f9B8D6C0E980aA81757A3AaC36",
           daiExchange: "0x77dB9C915809e7BE439D2AB21032B1b8B58F6891",
-        },
-        gelatoProvider: {
-          default: "0x518eAa8f962246bCe2FA49329Fe998B66d67cbf8",
         },
       },
       // contracts: {

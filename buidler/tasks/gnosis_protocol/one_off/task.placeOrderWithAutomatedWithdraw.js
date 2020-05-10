@@ -18,7 +18,7 @@ export default task(
   )
   .addOptionalParam(
     "sellamount",
-    "amount to sell on batch exchange (default 4*10**18)",
+    "amount to sell on batch exchange (default 5*10**18)",
     "5000000000000000000"
   )
   .addOptionalParam(
@@ -116,12 +116,23 @@ export default task(
       let safeDeployed = await run("is-safe-deployed", {
         safeaddress: safeAddress,
       });
+
       let gelatoIsWhitelisted = await run("is-gelato-whitelisted-module", {
         safeaddress: safeAddress,
       });
+      if (taskArgs.log) console.log("Need to whitelist gelatoCore as module");
 
       const gelatoCoreAddress =
         config.networks.rinkeby.addressBook.gelato.gelatoCore;
+
+      console.log(`Gelato Core: ${gelatoCoreAddress}`);
+
+      const gelatoCore = await run("instantiateContract", {
+        name: "GelatoCore",
+        address: gelatoCoreAddress,
+        read: true,
+        signer: user,
+      });
 
       // Get enable gelatoCore as module calldata
       const enableGelatoData = await run("abi-encode-withselector", {
@@ -212,6 +223,13 @@ export default task(
         provider: gelatoProvider.addr,
       });
 
+      // check if userProxy canSubmit task
+      const canSubmitResult = await gelatoCore.canSubmitTask(
+        safeAddress,
+        withdrawTask
+      );
+      console.log(canSubmitResult);
+
       const submitTaskPayload = await run("abi-encode-withselector", {
         contractname: "GelatoCore",
         functionname: "submitTask",
@@ -272,7 +290,8 @@ export default task(
       });
 
       let encodedMultisendData;
-      if (!gelatoIsWhitelisted) {
+      if (gelatoIsWhitelisted === false) {
+        console.log("Whitelisting gelato Core");
         encodedMultisendData = multiSend.interface.functions.multiSend.encode([
           ethers.utils.hexlify(
             ethers.utils.concat([
