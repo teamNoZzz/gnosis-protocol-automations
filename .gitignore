@@ -4,5 +4,8 @@ node_modules
 # local env variables
 .env
 
+# buidler cache
+cache
+
 # VS Code
 .vscode
