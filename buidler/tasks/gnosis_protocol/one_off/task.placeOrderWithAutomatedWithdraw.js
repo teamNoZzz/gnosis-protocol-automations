@@ -211,10 +211,7 @@ export default task(
       // ##### Task (no condition as we check termsOk in action)
 
       const withdrawTask = new Task({
-        provider: gelatoProvider,
         actions: [actionWithdrawBatchExchange],
-        expiryDate: constants.HashZero,
-        autoSubmitNextTask: false,
       });
 
       // ######### Check if Provider has whitelisted TaskSpec #########
@@ -226,14 +223,16 @@ export default task(
       // check if userProxy canSubmit task
       const canSubmitResult = await gelatoCore.canSubmitTask(
         safeAddress,
-        withdrawTask
+        gelatoProvider,
+        withdrawTask,
+        0
       );
       console.log(canSubmitResult);
 
       const submitTaskPayload = await run("abi-encode-withselector", {
         contractname: "GelatoCore",
         functionname: "submitTask",
-        inputs: [withdrawTask],
+        inputs: [gelatoProvider, withdrawTask, 0],
       });
 
       // Encode for MULTI SEND

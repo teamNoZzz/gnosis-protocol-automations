@@ -1,35 +1,31 @@
 import { constants, utils } from "ethers";
+import checkTaskMembers from "../../helpers/gelato/checkTaskMembers";
 
 class TaskReceipt {
-  constructor({ id, userProxy, task, next, cycle }) {
+  constructor({
+    id,
+    userProxy,
+    provider,
+    index,
+    tasks,
+    expiryDate,
+    submissionsLeft,
+  }) {
     if (userProxy === undefined) throw new Error("TaskReceipt: no userProxy");
-    if (task === undefined) throw new Error("TaskReceipt: no Task object");
-    // if (next !== undefined) next = utils.bigNumberify(next);
-    if (cycle && !Array.isArray(cycle))
-      throw new Error("\nTask: cycle be non-empty Array\n");
-
-    _checkTaskMembers(task);
-    if (cycle !== undefined) for (const task of cycle) _checkTaskMembers(task);
+    if (!provider) throw new Error("TaskReceipt: no provider\n");
+    if (!tasks || !Array.isArray(tasks))
+      throw new Error("\nTask: tasks must be Array\n");
+    if (!tasks.length) throw new Error("\nTask: tasks be non-empty Array\n");
+    for (const task of tasks) checkTaskMembers(task);
 
     this.id = id !== undefined ? utils.bigNumberify(id) : constants.Zero;
     this.userProxy = userProxy;
-    this.task = task;
-    this.next =
-      next === undefined ? utils.bigNumberify("0") : utils.bigNumberify(next);
-    this.cycle = cycle ? cycle : [];
-  }
-}
-
-async function _checkTaskMembers(task) {
-  if (!task.provider) throw new Error("\nTask: no provider\n");
-  if (task.conditions && !Array.isArray(task.conditions))
-    throw new Error("\nTask: optional conditions must be non-empty Array\n");
-  if (!task.actions || !Array.isArray(task.actions) || !task.actions.length)
-    throw new Error("\nTask: task.actions must be non-empty Array\n");
-  if (task.autoResubmitSelf && typeof task.autoResubmitSelf !== "boolean") {
-    throw new Error(
-      "\nTask: task.autoResubmitSelf must be boolean if defined\n"
-    );
+    this.provider = provider;
+    this.index =
+      index === undefined ? constants.Zero : utils.bigNumberify(index);
+    this.tasks = tasks ? tasks : [];
+    this.expiryDate = expiryDate !== undefined ? expiryDate : constants.Zero;
+    this.submissionsLeft = submissionsLeft === undefined ? 1 : submissionsLeft;
   }
 }
 

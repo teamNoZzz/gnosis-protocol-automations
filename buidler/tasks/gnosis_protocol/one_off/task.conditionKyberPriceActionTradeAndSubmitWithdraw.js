@@ -129,6 +129,13 @@ export default task(
     const gelatoCoreAddress =
       config.networks.rinkeby.addressBook.gelato.gelatoCore;
 
+    const gelatoCore = await run("instantiateContract", {
+      name: "GelatoCore",
+      address: gelatoCoreAddress,
+      read: true,
+      signer: user,
+    });
+
     // Get enable gelatoCore as module calldata
     const enableGelatoData = await run("abi-encode-withselector", {
       contractname: "IGnosisSafe",
@@ -251,9 +258,7 @@ export default task(
     });
 
     const taskWithdrawBatchExchange = new Task({
-      provider: gelatoProvider,
       actions: [actionWithdrawBatchExchange],
-      expiryDate: constants.HashZero,
     });
 
     // ######### Check if Provider has whitelisted TaskSpec #########
@@ -290,30 +295,14 @@ export default task(
       termsOkCheck: true,
     });
 
-    const submitWithTaskData = await run("abi-encode-withselector", {
-      contractname: "GelatoCore",
-      functionname: "submitTask",
-      inputs: [taskWithdrawBatchExchange],
-    });
-
-    const submitTaskAction = new Action({
-      addr: gelatoCoreAddress,
-      data: submitWithTaskData,
-      operation: Operation.Call,
-      value: 0,
-      termsOkCheck: false,
-    });
-
-    const placeOrderAndSubmitWithdrawTask = new Task({
-      provider: gelatoProvider,
+    const placeOrderTask = new Task({
       conditions: [condition],
-      actions: [realPlaceOrderAction, submitTaskAction],
-      expiryDate: constants.HashZero,
+      actions: [realPlaceOrderAction],
     });
 
     // ######### Check if Provider has whitelisted TaskSpec #########
     await run("check-if-provided", {
-      task: placeOrderAndSubmitWithdrawTask,
+      task: placeOrderTask,
       provider: gelatoProvider.addr,
     });
 
@@ -321,8 +310,13 @@ export default task(
 
     const submitTaskPayload = await run("abi-encode-withselector", {
       contractname: "GelatoCore",
-      functionname: "submitTask",
-      inputs: [placeOrderAndSubmitWithdrawTask],
+      functionname: "submitTaskCycle",
+      inputs: [
+        gelatoProvider,
+        [placeOrderTask, taskWithdrawBatchExchange],
+        0,
+        1,
+      ],
     });
 
     const submitTaskMultiSend = ethers.utils.solidityPack(

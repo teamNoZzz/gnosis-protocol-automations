@@ -40,7 +40,6 @@ export default task(
           conditions:
             conditionAddresses.length > 0 ? conditionAddresses : undefined,
           actions: taskArgs.task.actions,
-          autoSubmitNextTask: taskArgs.task.autoSubmitNextTask,
           gasPriceCeil: 0,
         });
       } else if (taskArgs.taskspecname) {

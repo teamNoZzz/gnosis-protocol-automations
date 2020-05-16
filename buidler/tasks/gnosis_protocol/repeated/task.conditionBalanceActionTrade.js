@@ -36,7 +36,7 @@ export default task(
     types.string
   )
   .addOptionalParam(
-    "frequency",
+    "cycle",
     "how often it should be done, important for accurate approvals and expiry date",
     "5",
     types.string
@@ -99,7 +99,7 @@ export default task(
 
     const totalSellAmount = ethers.utils
       .bigNumberify(taskArgs.sellamount)
-      .mul(ethers.utils.bigNumberify(taskArgs.frequency));
+      .mul(ethers.utils.bigNumberify(taskArgs.cycle));
 
     if (taskArgs.log)
       console.log(`
@@ -226,11 +226,8 @@ export default task(
     });
 
     const placeOrderTask = new Task({
-      provider: gelatoProvider,
       conditions: [condition],
       actions: [placeOrderAction, setConditionBalanceAction],
-      expiryDate: constants.HashZero,
-      autoSubmitNextTask: true,
     });
 
     // ######### Check if Provider has whitelisted TaskSpec #########
@@ -243,8 +240,8 @@ export default task(
 
     const submitTaskPayload = await run("abi-encode-withselector", {
       contractname: "GelatoCore",
-      functionname: "submitTask",
-      inputs: [placeOrderTask],
+      functionname: "submitTaskCycle",
+      inputs: [gelatoProvider, [placeOrderTask], 0, taskArgs.cycle],
     });
 
     const setConditionMultiSend = ethers.utils.solidityPack(

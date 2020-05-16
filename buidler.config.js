@@ -48,9 +48,9 @@ module.exports = {
         gelato: {
           executor: "0x99E69499973484a96639f4Fb17893BC96000b3b8",
           defaultProvider: "0x518eAa8f962246bCe2FA49329Fe998B66d67cbf8",
-          gelatoCore: "0x6B7720fFa476e1a85f7301F54Bb2009a3CEE6B1c",
+          gelatoCore: "0xE7418743527a8e5F191bA4e9609b5914c9880a12",
           providerModuleGnosisSafeProxy:
-            "0x42b6303BAdEB2d5038FcEd9c1C2F2f5CD8eA9568",
+            "0x0b03cE8fAb9a5a0D8fe2F641264ed61B7c6b1852",
           feeExtractor: "0x9b625d0aC057450E67B7e3B6e17633AcF01Fe2a9",
         },
         gelatoActions: {
